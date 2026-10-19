@@ -70,6 +70,7 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true, user: userData };
     } catch (err) {
+      clearAuth();
       const message = err.response?.data?.message || err.message || 'Login failed';
       throw new Error(message);
     } finally {

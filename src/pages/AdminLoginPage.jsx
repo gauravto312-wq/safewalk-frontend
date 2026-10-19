@@ -4,8 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { Shield, Lock, Mail, Eye, EyeOff, AlertCircle, ArrowLeft, Loader2 } from 'lucide-react';
 
 const AdminLoginPage = () => {
-  const [identifier, setIdentifier] = useState('gaurav@safewalk.in');
-  const [password, setPassword] = useState('Password123!');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -48,7 +48,12 @@ const AdminLoginPage = () => {
         setError('Access denied. This account does not possess administrator privileges.');
       }
     } catch (err) {
-      setError(err.message || 'Authentication failed. Please verify credentials.');
+      const msg = err.response?.data?.message || err.message;
+      if (!msg || msg === 'Network Error') {
+        setError('Unable to connect to the SafeWalk API server. Please check your network connection or ensure the backend service is running.');
+      } else {
+        setError(msg);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -97,9 +102,9 @@ const AdminLoginPage = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="on">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
+              <label htmlFor="admin-identifier" className="block text-xs font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
                 Administrator Identifier (Email or Mobile)
               </label>
               <div className="relative">
@@ -107,11 +112,16 @@ const AdminLoginPage = () => {
                   <Mail className="w-4 h-4" />
                 </div>
                 <input
+                  id="admin-identifier"
+                  name="username"
                   type="text"
                   required
+                  autoComplete="username"
+                  spellCheck="false"
+                  autoCapitalize="none"
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="e.g. gaurav@safewalk.in"
+                  placeholder="admin@safewalk.in or mobile number"
                   className="w-full pl-10 pr-3.5 py-2.5 bg-slate-950 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                 />
               </div>
@@ -119,7 +129,7 @@ const AdminLoginPage = () => {
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                <label htmlFor="admin-password" className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
                   Admin Password
                 </label>
               </div>
@@ -128,8 +138,11 @@ const AdminLoginPage = () => {
                   <Lock className="w-4 h-4" />
                 </div>
                 <input
+                  id="admin-password"
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
                   required
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
@@ -140,6 +153,7 @@ const AdminLoginPage = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 transition"
                   tabIndex={-1}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>

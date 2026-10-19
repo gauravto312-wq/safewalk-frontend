@@ -46,6 +46,12 @@ apiClient.interceptors.response.use(
       if (window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin/login') {
         window.location.href = '/admin/login?sessionExpired=true';
       }
+    } else if (!error.response) {
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        error.message = 'The server took too long to respond. Please verify server availability and try again.';
+      } else if (error.message === 'Network Error' || error.code === 'ERR_NETWORK') {
+        error.message = 'Unable to connect to the SafeWalk API server. Please check your network connection or ensure the backend service is running.';
+      }
     }
     return Promise.reject(error);
   }
